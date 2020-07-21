@@ -194,14 +194,14 @@ make_config(){
 }
 install_docker(){
 	
-	[[ ! -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}已经安装$NAME.请检查!" && exit 1
+	[[ ! -z $(docker ps -a | grep $NAME | awk '{print $3}') ]] && echo -e "${Info}已经安装$NAME.请检查!" && exit 1
 	echo -e "${Info}正在安装$NAME..."
 	docker pull $REPOSITORY
 	[[ -z $(docker images| grep $REPOSITORY | awk '{print $3}') ]] && echo -e "$Error取回镜像出现问题!" && exit 1
 	make_config
 	echo -e "${Info}正在启动$NAME..."	
-	docker run --name $REPOSITORY -d -p $ssr_port:$ssr_port -v $CONFIG_DIR:$CONFIG_DIR --dns 8.8.8.8 $REPOSITORY
-	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
+	docker run --name $NAME -d -p $ssr_port:$ssr_port -v $CONFIG_DIR:$CONFIG_DIR --dns 8.8.8.8 $REPOSITORY
+	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 	sleep 1 && clear
 	install_jq
 	show_user_info
@@ -210,7 +210,7 @@ install_docker(){
 }
 
 uninstall_docker(){
-	[[ ! -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}$NAME没有安装.请检查!" && exit 1
+	[[ ! -z $(docker ps -a | grep $NAME | awk '{print $3}') ]] && echo -e "${Info}$NAME没有安装.请检查!" && exit 1
 	echo -e "${Info}正在卸载$NAME..."
 	docker rm $REPOSITORY
 	[[ -z $(docker images| grep $REPOSITORY | awk '{print $3}') ]] && echo -e "$Info删除完毕!" 
@@ -218,19 +218,19 @@ uninstall_docker(){
 
 start_docker(){
 	
-	[[ ! -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] && echo -e "${Info}正在启动$NAME..." && docker start $REPOSITORY
-	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
+	[[ ! -z $(docker ps| grep $NAME | awk '{print $1}') ]] && echo -e "${Info}正在启动$NAME..." && docker start $NAME
+	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 }
 
 stop_docker(){
 
-	 [[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] && echo -e "${Info}正在关闭$NAME..." && docker stop $REPOSITORY
-        [[ ! -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME关闭成功..."
+	 [[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] && echo -e "${Info}正在关闭$NAME..." && docker stop $NAME
+        [[ ! -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME关闭成功..."
 }
 
 restart_docker(){
-	echo -e "${Info}正在重启$NAME..." && docker restart $REPOSITORY
-	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
+	echo -e "${Info}正在重启$NAME..." && docker restart $NAME
+	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 }
 
 install_jq(){
