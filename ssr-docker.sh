@@ -194,7 +194,7 @@ make_config(){
 }
 install_docker(){
 	
-	[[ -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}已经安装$NAME.请检查!" && exit 1
+	[[ ! -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}已经安装$NAME.请检查!" && exit 1
 	echo -e "${Info}正在安装$NAME..."
 	docker pull $REPOSITORY
 	[[ -z $(docker images| grep $REPOSITORY | awk '{print $3}') ]] && echo -e "$Error取回镜像出现问题!" && exit 1
