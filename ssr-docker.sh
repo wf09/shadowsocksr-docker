@@ -5,14 +5,14 @@ export PATH
 #	System Required: CentOS 6+/Debian 6+/Ubuntu 14.04+
 #	Description: ShadowsocksR server Docker Manage Shell
 #	Version: 1.0.0
-#       Author: fly97
+#   Author: fly97
 #=================================================
-Sh_ver="1.0"
+SH_VER="1.0"
 REPOSITORY="fly97/shadowsocksr"
-Name="ShadowsocksR"
-config_dir="/etc/shadowsocksr/"
-config_user_file="/etc/shadowsocksr/config.json"
-jq_bin="/etc/shadowsocksr/jq"
+NAME="shadowsocksr"
+CONFIG_DIR="/etc/shadowsocksr/"
+CONFIG_JSON="/etc/shadowsocksr/config.json"
+JQ_BIN="/etc/shadowsocksr/jq"
 
 Green_font_prefix="\033[32m" && Red_font_prefix="\033[31m" && Green_background_prefix="\033[42;37m" && Red_background_prefix="\033[41;37m" && Font_color_suffix="\033[0m"
 Info="${Green_font_prefix}[信息]${Font_color_suffix}"
@@ -22,9 +22,9 @@ Separator_1="——————————————————————�
 
 
 write_config(){
-[[ ! -e $config_dir ]] && mkdir $config_dir
-[[ ! -e $config_user_file ]] && touch $config_user_file 
-cat > ${config_user_file}<<-EOF
+[[ ! -e $CONFIG_DIR ]] && mkdir $CONFIG_DIR
+[[ ! -e $CONFIG_JSON ]] && touch $CONFIG_JSON 
+cat > ${CONFIG_JSON}<<-EOF
 {
     "server": "0.0.0.0",
     "server_ipv6": "::",
@@ -194,14 +194,14 @@ make_config(){
 }
 install_docker(){
 	
-	[[ -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}已经安装$Name.请检查!" && exit 1
-	echo -e "${Info}正在安装$Name..."
+	[[ -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}已经安装$NAME.请检查!" && exit 1
+	echo -e "${Info}正在安装$NAME..."
 	docker pull $REPOSITORY
 	[[ -z $(docker images| grep $REPOSITORY | awk '{print $3}') ]] && echo -e "$Error取回镜像出现问题!" && exit 1
 	make_config
-	echo -e "${Info}正在启动$Name..."	
-	docker run --name $REPOSITORY -d -p $ssr_port:$ssr_port -v $config_dir:$config_dir --dns 8.8.8.8 $REPOSITORY
-	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$Name启动成功..."
+	echo -e "${Info}正在启动$NAME..."	
+	docker run --name $REPOSITORY -d -p $ssr_port:$ssr_port -v $CONFIG_DIR:$CONFIG_DIR --dns 8.8.8.8 $REPOSITORY
+	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 	sleep 1 && clear
 	install_jq
 	show_user_info
@@ -210,52 +210,52 @@ install_docker(){
 }
 
 uninstall_docker(){
-	[[ ! -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}$Name没有安装.请检查!" && exit 1
-	echo -e "${Info}正在卸载$Name..."
+	[[ ! -z $(docker ps -a | grep $REPOSITORY | awk '{print $3}') ]] && echo -e "${Info}$NAME没有安装.请检查!" && exit 1
+	echo -e "${Info}正在卸载$NAME..."
 	docker rm $REPOSITORY
 	[[ -z $(docker images| grep $REPOSITORY | awk '{print $3}') ]] && echo -e "$Info删除完毕!" 
 }
 
 start_docker(){
 	
-	[[ ! -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] && echo -e "${Info}正在启动$Name..." && docker start $REPOSITORY
-	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$Name启动成功..."
+	[[ ! -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] && echo -e "${Info}正在启动$NAME..." && docker start $REPOSITORY
+	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 }
 
 stop_docker(){
 
-	 [[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] && echo -e "${Info}正在关闭$Name..." && docker stop $REPOSITORY
-        [[ ! -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$Name关闭成功..."
+	 [[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] && echo -e "${Info}正在关闭$NAME..." && docker stop $REPOSITORY
+        [[ ! -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME关闭成功..."
 }
 
 restart_docker(){
-	echo -e "${Info}正在重启$Name..." && docker restart $REPOSITORY
-	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$Name启动成功..."
+	echo -e "${Info}正在重启$NAME..." && docker restart $REPOSITORY
+	[[ -z $(docker ps| grep $REPOSITORY | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 }
 
 install_jq(){
 	#安装jq解析器
 	cd /etc/shadowsocksr
-	wget -qO $jq_bin "https://cdn.jsdelivr.net/gh/wf09/jq/jq-linux64"
+	wget -qO $JQ_BIN "https://cdn.jsdelivr.net/gh/wf09/jq/jq-linux64"
 	chmod +x jq
 }
 
 get_user_info(){
-	[[ ! -e $jq_bin ]] && echo -e "${Error}jq解析器不存在!" && exit 1
-	port=`${jq_bin} '.server_port' ${config_user_file}`
-	password=`${jq_bin} '.password' ${config_user_file} | sed 's/^.//;s/.$//'`
-	method=`${jq_bin} '.method' ${config_user_file} | sed 's/^.//;s/.$//'`
-	protocol=`${jq_bin} '.protocol' ${config_user_file} | sed 's/^.//;s/.$//'`
-	obfs=`${jq_bin} '.obfs' ${config_user_file} | sed 's/^.//;s/.$//'`
-	protocol_param=`${jq_bin} '.protocol_param' ${config_user_file} | sed 's/^.//;s/.$//'`
-	speed_limit_per_con=`${jq_bin} '.speed_limit_per_con' ${config_user_file}`
-	speed_limit_per_user=`${jq_bin} '.speed_limit_per_user' ${config_user_file}`
-	connect_verbose_info=`${jq_bin} '.connect_verbose_info' ${config_user_file}`
+	[[ ! -e $JQ_BIN ]] && echo -e "${Error}jq解析器不存在!" && exit 1
+	port=`${JQ_BIN} '.server_port' ${CONFIG_JSON}`
+	password=`${JQ_BIN} '.password' ${CONFIG_JSON} | sed 's/^.//;s/.$//'`
+	method=`${JQ_BIN} '.method' ${CONFIG_JSON} | sed 's/^.//;s/.$//'`
+	protocol=`${JQ_BIN} '.protocol' ${CONFIG_JSON} | sed 's/^.//;s/.$//'`
+	obfs=`${JQ_BIN} '.obfs' ${CONFIG_JSON} | sed 's/^.//;s/.$//'`
+	protocol_param=`${JQ_BIN} '.protocol_param' ${CONFIG_JSON} | sed 's/^.//;s/.$//'`
+	speed_limit_per_con=`${JQ_BIN} '.speed_limit_per_con' ${CONFIG_JSON}`
+	speed_limit_per_user=`${JQ_BIN} '.speed_limit_per_user' ${CONFIG_JSON}`
+	connect_verbose_info=`${JQ_BIN} '.connect_verbose_info' ${CONFIG_JSON}`
 }
 show_user_info(){
 	get_user_info
 	ip=$(curl -s api.ip.sb/ip)
-	echo -e " ShadowsocksR账号 配置信息：" && echo
+	echo -e " ShadowsocksR账号 配置信息：" && echo && echo $Separator_1
 	echo -e " I  P\t    : ${Green_font_prefix}${ip}${Font_color_suffix}"
 	echo -e " 端口\t    : ${Green_font_prefix}${port}${Font_color_suffix}"
 	echo -e " 密码\t    : ${Green_font_prefix}${password}${Font_color_suffix}"
@@ -268,20 +268,20 @@ show_docker_logs(){
 }
 mannal_make_config(){
 	[[ -z $(vim --version) ]] && apt-get update && apt-get install vim
-	vim $config_user_file
+	vim $CONFIG_JSON
 }
 
 #--------------------------------------------主函数入口--------------------------------------------------	
 
 main(){
-echo -e "  ShadowsocksR 一键管理脚本 Powered By fly97 ${Red_font_prefix}[v${Sh_ver}]${Font_color_suffix}
-${Green_font_prefix}1.${Font_color_suffix} 安装 $Name-docker
-${Green_font_prefix}2.${Font_color_suffix} 卸载 $Name-docker
+echo -e "  ShadowsocksR 一键管理脚本 Powered By fly97 ${Red_font_prefix}[v${SH_VER}]${Font_color_suffix}
+${Green_font_prefix}1.${Font_color_suffix} 安装 $NAME-docker
+${Green_font_prefix}2.${Font_color_suffix} 卸载 $NAME-docker
 ————————————
-${Green_font_prefix}3.${Font_color_suffix} 启动 $Name-docker
-${Green_font_prefix}4.${Font_color_suffix} 停止 $Name-docker
-${Green_font_prefix}5.${Font_color_suffix} 重启 $Name-docker
-${Green_font_prefix}6.${Font_color_suffix} 查看 $Name-docker日志
+${Green_font_prefix}3.${Font_color_suffix} 启动 $NAME-docker
+${Green_font_prefix}4.${Font_color_suffix} 停止 $NAME-docker
+${Green_font_prefix}5.${Font_color_suffix} 重启 $NAME-docker
+${Green_font_prefix}6.${Font_color_suffix} 查看 $NAME-docker日志
 ————————————
 ${Green_font_prefix}7.${Font_color_suffix} 查看 账号信息
 ${Green_font_prefix}8.${Font_color_suffix} 设置 用户配置
