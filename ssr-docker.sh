@@ -202,7 +202,7 @@ install_docker(){
 	echo -e "${Info}正在启动$NAME..."	
 	docker run --name $NAME -d -p $ssr_port:$ssr_port -v $CONFIG_DIR:$CONFIG_DIR --dns 8.8.8.8 $REPOSITORY
 	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
-	sleep 1 && clear
+	#sleep 1 && clear
 	install_jq
 	show_user_info
 	
@@ -210,27 +210,29 @@ install_docker(){
 }
 
 uninstall_docker(){
-	[[ ! -z $(docker ps -a | grep $NAME | awk '{print $3}') ]] && echo -e "${Info}$NAME没有安装.请检查!" && exit 1
+	[[ -z $(docker ps -a | grep $NAME | awk '{print $3}') ]] && echo -e "${Info}$NAME没有安装.请检查!" && exit 1
 	echo -e "${Info}正在卸载$NAME..."
-	docker rm $REPOSITORY
+	stop_docker
+	docker rm $NAME
+	docker rmi $REPOSITORY
 	[[ -z $(docker images| grep $REPOSITORY | awk '{print $3}') ]] && echo -e "$Info删除完毕!" 
 }
 
 start_docker(){
 	
-	[[ ! -z $(docker ps| grep $NAME | awk '{print $1}') ]] && echo -e "${Info}正在启动$NAME..." && docker start $NAME
-	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
+	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] && echo -e "${Info}正在启动$NAME..." && docker start $NAME
+	[[ ! -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 }
 
 stop_docker(){
 
-	 [[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] && echo -e "${Info}正在关闭$NAME..." && docker stop $NAME
-        [[ ! -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME关闭成功..."
+	[[ ! -z $(docker ps| grep $NAME | awk '{print $1}') ]] && echo -e "${Info}正在关闭$NAME..." && docker stop $NAME
+	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME关闭成功..."
 }
 
 restart_docker(){
 	echo -e "${Info}正在重启$NAME..." && docker restart $NAME
-	[[ -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
+	[[ ! -z $(docker ps| grep $NAME | awk '{print $1}') ]] &&  echo -e "${Info}$NAME启动成功..."
 }
 
 install_jq(){
@@ -255,13 +257,14 @@ get_user_info(){
 show_user_info(){
 	get_user_info
 	ip=$(curl -s api.ip.sb/ip)
-	echo -e " ShadowsocksR账号 配置信息：" && echo && echo $Separator_1
+	echo -e " ShadowsocksR账号 配置信息："&& echo $Separator_1
 	echo -e " I  P\t    : ${Green_font_prefix}${ip}${Font_color_suffix}"
 	echo -e " 端口\t    : ${Green_font_prefix}${port}${Font_color_suffix}"
 	echo -e " 密码\t    : ${Green_font_prefix}${password}${Font_color_suffix}"
 	echo -e " 加密\t    : ${Green_font_prefix}${method}${Font_color_suffix}"
 	echo -e " 协议\t    : ${Red_font_prefix}${protocol}${Font_color_suffix}"
 	echo -e " 混淆\t    : ${Red_font_prefix}${obfs}${Font_color_suffix}"
+	echo $Separator_1
 }
 show_docker_logs(){
 	docker logs $REPOSITORY
@@ -286,7 +289,7 @@ ${Green_font_prefix}6.${Font_color_suffix} 查看 $NAME-docker日志
 ${Green_font_prefix}7.${Font_color_suffix} 查看 账号信息
 ${Green_font_prefix}8.${Font_color_suffix} 设置 用户配置
 ${Green_font_prefix}9.${Font_color_suffix} 手动 修改配置
-${Green_font_prefix}10.${Font_color_suffix} 安装jq解析器
+${Green_font_prefix}10.${Font_color_suffix} 安装 jq解析器
 "
 echo && read -e -p "请输入数字：" num
 case "$num" in
